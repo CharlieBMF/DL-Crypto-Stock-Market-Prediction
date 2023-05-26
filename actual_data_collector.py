@@ -6,6 +6,8 @@ import websockets
 import asyncio
 import json
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Api:
@@ -263,58 +265,323 @@ class Api:
         return response
 
 binance = Api(base_url='https://api.binance.com')
+orderbook_df = pd.DataFrame(columns=['b0-0.001', 'b0.001-0.002', 'b0.002-0.003', 'b0.003-0.004', 'b0.004-0.005',
+                                     'b0.005-0.006', 'b0.006-0.007', 'b0.007-0.008', 'b0.008-0.009', 'b0.009-0.01',
+                                     'b0.01-0.015', 'b0.015-0.02', 'b0.02-0.025', 'b0.025-0.03', 'b0.03-0.035',
+                                     'b0.035-0.04', 'b0.04-0.045', 'b0.045-0.05', 'b0.05-0.055', 'b0.055-0.06',
+                                     'b0.06-0.065',
+                                     'b0.065-0.07', 'b0.07-0.075', 'b0.075-0.08', 'b0.08-0.085', 'b0.085-0.09',
+                                     'b0.09-0.095', 'b0.095-0.1',
+                                     'b0.1-0.12', 'b0.12-0.15', 'b0.15-0.2', 'b0.2-0.25',
+                                     'b0.25-0.3', 'b0.3-0.35', 'b0.35-0.4', 'b0.4-0.45', 'b0.45-0.5', 'b0.5-0.6',
+                                     'b0.6-0.7',
+                                     'b0.7-0.8', 'b0.8-0.9', 'b0.9-1', 'b1-1+', 'b0-0.002', 'b0.002-0.004',
+                                     'b0.004-0.006',
+                                     'b0.006-0.008', 'b0.008-0.01', 'b0.01-0.02', 'b0.02-0.03', 'b0.03-0.04',
+                                     'b0.04-0.05', 'b0.05-0.06', 'b0.06-0.07', 'b0.07-0.08', 'b0.08-0.09', 'b0.1-0.2',
+                                     'b0.2-0.3',
+                                     'b0.3-0.4', 'b0.4-0.5', 'b0.5-0.7', 'b0.7-1', 'b0-0.005', 'b0.005-0.01',
+                                     'b0.01-0.05', 'b0.05-0.1', 'b0.1-0.3', 'b0.3-0.5', 'b0.5-1',
+                                     'Total Bid Quantity', 'Actual Price',
+                                     'a0-0.001', 'a0.001-0.002', 'a0.002-0.003', 'a0.003-0.004', 'a0.004-0.005',
+                                     'a0.005-0.006', 'a0.006-0.007', 'a0.007-0.008', 'a0.008-0.009', 'a0.009-0.01',
+                                     'a0.01-0.015', 'a0.015-0.02', 'a0.02-0.025', 'a0.25-0.03', 'a0.03-0.035',
+                                     'a0.035-0.04', 'a0.045-0.05', 'a0.05-0.06', 'a0.06-0.07', 'a0.07-0.08',
+                                     'a0.08-0.09', 'a0.09-0.1', 'a0.1-0.12', 'a0.12-0.15', 'a0.15-0.2', 'a0.2-0.25',
+                                     'a0.25-0.3', 'a0.3-0.35', 'a0.35-0.4', 'a0.45-0.5', 'a0.5-0.6', 'a0.6-0.7',
+                                     'a0.7-0.8', 'a0.8-0.9', 'a0.9-1', 'a1-1+', 'a0.00-0.002', 'a0.002-0.004',
+                                     'a0.004-0.006',
+                                     'a0.006-0.008', 'a0.008-0.01', 'a0.01-0.02', 'a0.02-0.03', 'a0.03-0.04',
+                                     'a0.04-0.05', 'a0.06-0.07', 'a0.07-0.08', 'a0.08-0.09', 'a0.1-0.2', 'a0.2-0.3',
+                                     'a0.3-0.4', 'a0.4-0.5', 'a0.5-0.7', 'a0.7-1', 'a0.00-0.005', 'a0.005-0.01',
+                                     'a0.01-0.05', 'a0.05-0.1', 'a0.1-0.3', 'a0.3-0.5', 'a0.5-1',
+                                     'Total Asks Quantity'
+                                     ])
 
-for i in range(0,2):
 
+
+
+# # Dane przykładowe
+# czas = np.array([1, 2, 3, 4, 5])  # Czas
+# ceny = np.array([[10, 12, 15], [17, 14, 20], [18, 19, 22], [21, 25, 16], [23, 24, 27]])  # Ceny dla ofert kupna
+# ilosci_ofert_kupna = np.array([[5, 3, 8], [10, 6, 4], [7, 5, 9], [12, 6, 8], [9, 7, 11]])  # Ilości ofert kupna
+#
+# # Utworzenie wykresu punktowego z bąbelkami dla ofert kupna
+# for i in range(len(czas)):
+#     for j in range(len(ceny[i])):
+#         plt.scatter(czas[i], ceny[i][j], s=ilosci_ofert_kupna[i][j]*10, alpha=0.5)
+#
+# # Utworzenie liniowego wykresu dla głównej ceny produktu
+# plt.plot(czas, np.mean(ceny, axis=1), color='blue', label='Główna cena')
+#
+# # Konfiguracja osi i etykiet
+# plt.xlabel('Czas')
+# plt.ylabel('Cena')
+# plt.legend()
+#
+# # Wyświetlenie wykresu
+# plt.show()
+
+
+
+
+for i in range(0, 20):
     r = binance.get_order_book('BTCUSDT', limit='5000')
     order_book_data = r.json()
     order_book_data_bids = r.json()["bids"]
     order_book_data_asks = r.json()["asks"]
-    print(f'Bids: {order_book_data_bids} \n Asks: {order_book_data_asks} \n')
+    #print(f'Bids: {order_book_data_bids} \n Asks: {order_book_data_asks} \n')
     # order_book_bids_df = pd.DataFrame(columns=['bid price', 'bid qty'])
     # for bid in order_book_data_bids:
     #     order_book_bids_df = order_book_bids_df.append(pd.Series(bid, index=order_book_bids_df.columns), ignore_index=True)
     # print(order_book_bids_df)
 
-    orderbook_df = pd.DataFrame(columns=['b0-0.001', 'b0.001-0.002', 'b0.002-0.003', 'b0.003-0.004', 'b0.004-0.005',
-                                            'b0.005-0.006', 'b0.006-0.007', 'b0.007-0.008', 'b0.008-0.009', 'b0.009-0.01',
-                                            'b0.01-0.015', 'b0.015-0.02', 'b0.02-0.025', 'b0.25-0.03', 'b0.03-0.035',
-                                            'b0.035-0.04', 'b0.045-0.05', 'b0.05-0.06', 'b0.06-0.07', 'b0.07-0.08',
-                                            'b0.08-0.09', 'b0.09-0.1', 'b0.1-0.12', 'b0.12-0.15', 'b0.15-0.2', 'b0.2-0.25',
-                                            'b0.25-0.3', 'b0.3-0.35', 'b0.35-0.4', 'b0.45-0.5', 'b0.5-0.6', 'b0.6-0.7',
-                                            'b0.7-0.8', 'b0.8-0.9', 'b0.9-1', 'b1-1+', 'b0.00-0.002', 'b0.002-0.004', 'b0.004-0.006',
-                                            'b0.006-0.008', 'b0.008-0.01', 'b0.01-0.02', 'b0.02-0.03', 'b0.03-0.04',
-                                            'b0.04-0.05', 'b0.06-0.07', 'b0.07-0.08', 'b0.08-0.09', 'b0.1-0.2', 'b0.2-0.3',
-                                            'b0.3-0.4', 'b0.4-0.5', 'b0.5-0.7', 'b0.7-1', 'b0.00-0.005', 'b0.005-0.01',
-                                            'b0.01-0.05', 'b0.05-0.1', 'b0.1-0.3', 'b0.3-0.5', 'b0.5-1',
-                                            'Total Bid Quantity',
-                                         'a0-0.001', 'a0.001-0.002', 'a0.002-0.003', 'a0.003-0.004', 'a0.004-0.005',
-                                         'a0.005-0.006', 'a0.006-0.007', 'a0.007-0.008', 'a0.008-0.009', 'a0.009-0.01',
-                                         'a0.01-0.015', 'a0.015-0.02', 'a0.02-0.025', 'a0.25-0.03', 'a0.03-0.035',
-                                         'a0.035-0.04', 'a0.045-0.05', 'a0.05-0.06', 'a0.06-0.07', 'a0.07-0.08',
-                                         'a0.08-0.09', 'a0.09-0.1', 'a0.1-0.12', 'a0.12-0.15', 'a0.15-0.2', 'a0.2-0.25',
-                                         'a0.25-0.3', 'a0.3-0.35', 'a0.35-0.4', 'a0.45-0.5', 'a0.5-0.6', 'a0.6-0.7',
-                                         'a0.7-0.8', 'a0.8-0.9', 'a0.9-1', 'a1-1+', 'a0.00-0.002', 'a0.002-0.004',
-                                         'a0.004-0.006',
-                                         'a0.006-0.008', 'a0.008-0.01', 'a0.01-0.02', 'a0.02-0.03', 'a0.03-0.04',
-                                         'a0.04-0.05', 'a0.06-0.07', 'a0.07-0.08', 'a0.08-0.09', 'a0.1-0.2', 'a0.2-0.3',
-                                         'a0.3-0.4', 'a0.4-0.5', 'a0.5-0.7', 'a0.7-1', 'a0.00-0.005', 'a0.005-0.01',
-                                         'a0.01-0.05', 'a0.05-0.1', 'a0.1-0.3', 'a0.3-0.5', 'a0.5-1',
-                                         'Total Asks Quantity'
-                                         ])
     orderbook_df.loc[len(orderbook_df)] = [0 for i in range(len(orderbook_df.columns))]
     print(orderbook_df)
-
+    #print(orderbook_df.iloc[len(orderbook_df)-1]['b0-0.001'])
 
     r = binance.get_actual_price_ticker(['BTCUSDT'])
     actual_price = r.json()[0]['price']
     print(f'Actual price: {actual_price}')
 
     for bid in order_book_data_bids:
-        ob_percent = float(actual_price)/float(bid[0])*100 - 100
+        orderbook_percent = float(actual_price)/float(bid[0])*100 - 100
+        #print(orderbook_percent, bid[1])
+        if orderbook_percent < 0.001:
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.001'] = orderbook_df.iloc[len(orderbook_df)-1]['b0-0.001'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.002'] = orderbook_df.iloc[len(orderbook_df)-1]['b0-0.002'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.005'] = orderbook_df.iloc[len(orderbook_df)-1]['b0-0.005'] + float(bid[1])
+        elif 0.001 <= orderbook_percent < 0.002:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.001-0.002'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.001-0.002'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.002'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0-0.002'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.005'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0-0.005'] + float(bid[1])
+        elif 0.002 <= orderbook_percent < 0.003:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.002-0.003'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.002-0.003'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.002-0.004'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.002-0.004'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.005'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0-0.005'] + float(bid[1])
+        elif 0.003 <= orderbook_percent < 0.004:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.003-0.004'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.003-0.004'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.002-0.004'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.002-0.004'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.005'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0-0.005'] + float(bid[1])
+        elif 0.004 <= orderbook_percent < 0.005:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.004-0.005'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.001-0.002'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.004-0.006'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.004-0.006'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0-0.005'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0-0.005'] + float(bid[1])
+        elif 0.005 <= orderbook_percent < 0.006:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.005-0.006'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.001-0.002'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.004-0.006'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.004-0.006'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.005-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.005-0.01'] + float(bid[1])
+        elif 0.006 <= orderbook_percent < 0.007:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.006-0.007'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.006-0.007'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.006-0.008'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.006-0.008'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.005-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.005-0.01'] + float(bid[1])
+        elif 0.007 <= orderbook_percent < 0.008:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.007-0.008'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.007-0.008'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.006-0.008'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.006-0.008'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.005-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.005-0.01'] + float(bid[1])
+        elif 0.008 <= orderbook_percent < 0.009:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.008-0.009'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.008-0.009'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.008-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.008-0.01'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.005-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.005-0.01'] + float(bid[1])
+        elif 0.009 <= orderbook_percent < 0.01:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.009-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.009-0.01'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.008-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.008-0.01'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.005-0.01'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.005-0.01'] + float(bid[1])
+        elif 0.01 <= orderbook_percent < 0.015:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.015'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.015'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.02'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.02'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.015 <= orderbook_percent < 0.02:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.015-0.02'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.015-0.02'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.02'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.02'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.02 <= orderbook_percent < 0.025:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.02-0.025'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.02-0.025'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.02-0.03'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.02-0.03'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.025 <= orderbook_percent < 0.03:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.025-0.03'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.025-0.03'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.02-0.03'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.02-0.03'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.03 <= orderbook_percent < 0.035:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.03-0.035'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.03-0.035'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.03-0.04'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.03-0.04'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.035 <= orderbook_percent < 0.04:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.035-0.04'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.035-0.04'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.03-0.04'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.03-0.04'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.04 <= orderbook_percent < 0.045:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.04-0.045'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.04-0.045'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.04-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.04-0.05'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.045 <= orderbook_percent < 0.05:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.045-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.045-0.05'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.04-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.04-0.05'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.01-0.05'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.01-0.05'] + float(bid[1])
+        elif 0.05 <= orderbook_percent < 0.055:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.055'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.055'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.06'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.06'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.055 <= orderbook_percent < 0.06:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.055-0.06'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.055-0.06'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.06'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.06'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.06 <= orderbook_percent < 0.065:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.06-0.065'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.06-0.065'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.06-0.07'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.06-0.07'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.065 <= orderbook_percent < 0.07:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.065-0.07'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.065-0.07'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.06-0.07'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.06-0.07'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.07 <= orderbook_percent < 0.075:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.07-0.075'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.07-0.075'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.07-0.08'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.07-0.08'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.075 <= orderbook_percent < 0.08:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.075-0.08'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.075-0.08'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.07-0.08'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.07-0.08'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.08 <= orderbook_percent < 0.085:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.08-0.085'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.08-0.085'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.08-0.09'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.08-0.09'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.085 <= orderbook_percent < 0.09:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.085-0.09'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.085-0.09'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.08-0.09'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.08-0.09'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.09 <= orderbook_percent < 0.095:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.09-0.095'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.09-0.095'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.08-0.09'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.08-0.09'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.05-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.05-0.1'] + float(bid[1])
+        elif 0.095 <= orderbook_percent < 0.1:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.095-0.1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.095-0.1'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.2'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.2'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.3'] + float(bid[1])
+        elif 0.1 <= orderbook_percent < 0.12:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.12'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.12'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.2'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.2'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.3'] + float(bid[1])
+        elif 0.12 <= orderbook_percent < 0.15:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.12-0.15'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.12-0.15'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.2'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.2'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.3'] + float(bid[1])
+        elif 0.15 <= orderbook_percent < 0.2:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.15-0.2'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.15-0.2'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.2'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.2'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.3'] + float(bid[1])
+        elif 0.2 <= orderbook_percent < 0.25:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.2-0.25'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.2-0.25'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.2-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.2-0.3'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.3'] + float(bid[1])
+        elif 0.25 <= orderbook_percent < 0.3:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.25-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.25-0.3'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.2-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.2-0.3'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.1-0.3'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.1-0.3'] + float(bid[1])
+        elif 0.3 <= orderbook_percent < 0.35:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.35'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.35'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.4'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.4'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.5'] + float(bid[1])
+        elif 0.35 <= orderbook_percent < 0.4:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.35-0.4'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.35-0.4'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.4'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.4'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.5'] + float(bid[1])
+        elif 0.4 <= orderbook_percent < 0.45:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.4-0.45'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.4-0.45'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.4-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.4-0.5'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.5'] + float(bid[1])
+        elif 0.45 <= orderbook_percent < 0.5:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.45-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.45-0.5'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.4-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.4-0.5'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.3-0.5'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.3-0.5'] + float(bid[1])
+        elif 0.5 <= orderbook_percent < 0.6:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-0.6'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-0.6'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-0.7'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-0.7'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-1'] + float(bid[1])
+        elif 0.6 <= orderbook_percent < 0.7:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.6-0.7'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.6-0.7'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-0.7'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-0.7'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-1'] + float(bid[1])
+        elif 0.7 <= orderbook_percent < 0.8:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.7-0.8'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.7-0.8'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-0.7'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-0.7'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-1'] + float(bid[1])
+        elif 0.7 <= orderbook_percent < 0.8:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.7-0.8'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.7-0.8'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.7-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.7-1'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-1'] + float(bid[1])
+        elif 0.8 <= orderbook_percent < 0.9:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.8-0.9'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.8-0.9'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.7-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.7-1'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-1'] + float(bid[1])
+        elif 0.9 <= orderbook_percent < 1:
+            orderbook_df.at[len(orderbook_df)-1, 'b0.9-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.9-1'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.7-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.7-1'] + float(bid[1])
+            orderbook_df.at[len(orderbook_df)-1, 'b0.5-1'] = orderbook_df.iloc[len(orderbook_df) - 1]['b0.5-1'] + float(bid[1])
+        elif orderbook_percent >= 1:
+            orderbook_df.at[len(orderbook_df)-1, 'b1-1+'] = orderbook_df.iloc[len(orderbook_df) - 1]['b1-1+'] + float(bid[1])
 
-    with open('testing.txt', 'a') as file:
-        file.write(r.text)
+        orderbook_df.at[len(orderbook_df)-1, 'Total Bid Quantity'] = orderbook_df.iloc[len(orderbook_df)-1]['Total Bid Quantity'] + float(bid[1])
+        orderbook_df.at[len(orderbook_df) - 1, 'Actual Price'] = actual_price
+    print(orderbook_df)
+
+with pd.ExcelWriter(r'OrdBookBids.xlsx') as writer:
+    orderbook_df.to_excel(writer)
+
+czas = np.array([i for i in range(0, len(orderbook_df))])
+print('Czas:', czas)
+# ceny = np.array([[10, 12, 15], [17, 14, 20], [18, 19, 22], [21, 25, 16], [23, 24, 27]])  # Ceny dla ofert kupna
+kolumny_df = ['b0-0.005', 'b0.005-0.01', 'b0.01-0.05', 'b0.05-0.1', 'b0.1-0.3', 'b0.3-0.5', 'b0.5-1', 'b1-1+']
+mnozniki_w_kolumnach_df = [0.0025/100, 0.0075/100, 0.025/100, 0.075/100, 0.2/100, 0.4/100, 0.75/100, 2/100]
+polaczone = list(zip(kolumny_df, mnozniki_w_kolumnach_df))
+print(polaczone)
+ceny = [[float(orderbook_df.iloc[i]['Actual Price']) - float(orderbook_df.iloc[1]['Actual Price']) * mnoznik
+       for mnoznik in mnozniki_w_kolumnach_df] for i in range(0, len(orderbook_df))]
+print(ceny)
+
+ilosci_btc_kupno = [[orderbook_df.iloc[i][kolumny] for kolumny in kolumny_df] for i in range(0, len(orderbook_df))]
+actual_ceny = [float(orderbook_df.iloc[i]['Actual Price']) for i in range(0, len(orderbook_df))]
+print(ilosci_btc_kupno)
+for i in range(len(czas)):
+    for j in range(len(ceny[i])):
+        plt.scatter(czas[i], ceny[i][j], s=ilosci_btc_kupno[i][j]*10, alpha=0.5)
+
+plt.plot(czas, actual_ceny, color='blue', label='Główna cena')
+
+# Konfiguracja osi i etykiet
+plt.xlabel('Czas')
+plt.ylabel('Cena')
+plt.legend()
+
+# Wyświetlenie wykresu
+plt.show()
+
+#ceny = np.array([cena for cena in [orderbook_df.iloc[1][kolumna] * mnoznik for (kolumna, mnoznik) in list(polaczone)]])
+#print(ceny)
+# ilosci_ofert_kupna = np.array([[5, 3, 8], [10, 6, 4], [7, 5, 9], [12, 6, 8], [9, 7, 11]])  # Ilości ofert kupna
+
+
+
+# # Utworzenie wykresu punktowego z bąbelkami dla ofert kupna
+# for i in range(len(czas)):
+#     for j in range(len(ceny[i])):
+#         plt.scatter(czas[i], ceny[i][j], s=ilosci_ofert_kupna[i][j]*10, alpha=0.5)
+#
+# # Utworzenie liniowego wykresu dla głównej ceny produktu
+# plt.plot(czas, np.mean(ceny, axis=1), color='blue', label='Główna cena')
+#
+# # Konfiguracja osi i etykiet
+# plt.xlabel('Czas')
+# plt.ylabel('Cena')
+# plt.legend()
+#
+# # Wyświetlenie wykresu
+# plt.show()
+
+
+
+
 
 # binance.get_recent_trade('BTCUSDT')
 # binance.get_historical_trades('BTCUSDT')
@@ -323,6 +590,15 @@ for i in range(0,2):
 # binance.get_actual_price_ticker(["BTCUSDT"])
 # binance.get_book_ticker(["BTCUSDT"])
 # binance.get_price_change_statistic(["BTCUSDT"], "1h")
+
+
+
+
+
+
+
+
+
 
 
 
