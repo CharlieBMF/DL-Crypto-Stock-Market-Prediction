@@ -6,7 +6,8 @@ from orderbook_functions import fill_bids_value_to_range, fill_asks_value_to_ran
 
 
 binance = Api(base_url='https://api.binance.com')
-orderbook_df = pd.DataFrame(columns=['Actual Price', 'Total Bid Quantity', 'Total Asks Quantity',
+orderbook_df = pd.DataFrame(columns=['Actual Price', 'Avg Price last 5 mins', 'Total Bid Quantity',
+                                     'Total Asks Quantity',
                                      'b0-0.001', 'b0.001-0.002', 'b0.002-0.003', 'b0.003-0.004', 'b0.004-0.005',
                                      'b0.005-0.006', 'b0.006-0.007', 'b0.007-0.008', 'b0.008-0.009', 'b0.009-0.01',
                                      'b0.01-0.015', 'b0.015-0.02', 'b0.02-0.025', 'b0.025-0.03', 'b0.03-0.035',
@@ -58,6 +59,12 @@ for i in range(0, 2):
 
     orderbook_df.at[len(orderbook_df) - 1, 'Actual Price'] = actual_price
 
+    r = binance.get_avg_price('BTCUSDT')
+    print(r)
+    avg_price = r.json()['price']
+    print(f'Average price: {avg_price}')
+    orderbook_df.at[len(orderbook_df) - 1, 'Avg Price last 5 mins'] = avg_price
+
     for bid in order_book_data_bids:
         orderbook_df.at[len(orderbook_df)-1, 'Total Bid Quantity'] = (
                 orderbook_df.iloc[len(orderbook_df)-1]['Total Bid Quantity'] + float(bid[1])
@@ -73,13 +80,11 @@ for i in range(0, 2):
         orderbook_df = fill_asks_value_to_range(ask, orderbook_df, orderbook_percent)
 
 
-
 with pd.ExcelWriter(r'OrdBookBids.xlsx') as writer:
     orderbook_df.to_excel(writer)
 
 czas = np.array([i for i in range(0, len(orderbook_df))])
 print('Czas:', czas)
-# ceny = np.array([[10, 12, 15], [17, 14, 20], [18, 19, 22], [21, 25, 16], [23, 24, 27]])  # Ceny dla ofert kupna
 kolumny_df = ['b0-0.005', 'b0.005-0.01', 'b0.01-0.05', 'b0.05-0.1', 'b0.1-0.3', 'b0.3-0.5', 'b0.5-1', 'b1-1+', 'a0-0.005', 'a0.005-0.01', 'a0.01-0.05', 'a0.05-0.1', 'a0.1-0.3', 'a0.3-0.5', 'a0.5-1', 'a1-1+']
 mnozniki_w_kolumnach_df = [0.0025/100, 0.0075/100, 0.025/100, 0.075/100, 0.2/100, 0.4/100, 0.75/100, 2/100, -0.0025/100, -0.0075/100, -0.025/100, -0.075/100, -0.2/100, -0.4/100, -0.75/100, -2/100]
 polaczone = list(zip(kolumny_df, mnozniki_w_kolumnach_df))
@@ -130,8 +135,6 @@ plt.show()
 
 
 
-
-
 # binance.get_recent_trade('BTCUSDT')
 # binance.get_historical_trades('BTCUSDT')
 # binance.get_klines_data('BTCUSDT', '1s')
@@ -139,15 +142,6 @@ plt.show()
 # binance.get_actual_price_ticker(["BTCUSDT"])
 # binance.get_book_ticker(["BTCUSDT"])
 # binance.get_price_change_statistic(["BTCUSDT"], "1h")
-
-
-
-
-
-
-
-
-
 
 
 
