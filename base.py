@@ -1,3 +1,5 @@
+import time
+
 import requests
 import urllib.parse
 
@@ -6,6 +8,7 @@ class Api:
 
     def __init__(self, base_url):
         self.base_url = base_url
+        self.check_time_url = '/api/v3/time'
         self.avg_price_url = '/api/v3/avgPrice'
         self.order_book_url = 'api/v3/depth'
         self.recent_trades_url = 'api/v3/trades'
@@ -15,6 +18,13 @@ class Api:
         self.actual_price_ticker_url = '/api/v3/ticker/price'
         self.order_book_ticker_url = '/api/v3/ticker/bookTicker'
         self.price_change_ticker_url = '/api/v3/ticker'
+        self.timestamp_primary_klines_update = str(int(time.time()*1000))  #primary updates is every minute
+
+    def check_time(self):
+        url = urllib.parse.urljoin(self.base_url, self.check_time_url)
+        response = self.execute_request(url)
+        print(response.text)
+        return response
 
     def get_avg_price(self, symbol):
         """
@@ -104,7 +114,7 @@ class Api:
         print(response.text)
         return response
 
-    def get_klines_data(self, symbol, interval, limit='500'):
+    def get_klines_data(self, symbol, type, end_time, interval, limit='500'):
         """
         Kline/candlestick bars for a symbol.
         :param symbol: ex. ["BTCUSDT"]
@@ -128,11 +138,16 @@ class Api:
         """
         symbol_url = '?symbol=' + str(symbol).replace("'", "\"")
         interval_url = '&interval=' + interval
+        if type == 'primary':
+            start_time_url = '&startTime=' + self.timestamp_primary_klines_update
+        end_time_url = '&endTime=' + end_time
         limit_url = '&limit=' + limit
-        url = urllib.parse.urljoin(self.base_url, self.klines_url) + symbol_url + interval_url + limit_url
+        url = (urllib.parse.urljoin(self.base_url, self.klines_url) + symbol_url + interval_url + start_time_url +
+               end_time_url + limit_url)
         print(url)
         response = self.execute_request(url)
         print(response.text)
+        self.timestamp_primary_klines_update = str(int(time.time()*1000))
         return response
 
     def get_last_24hr(self, symbols):

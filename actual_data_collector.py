@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from base import Api
 from orderbook_functions import fill_bids_value_to_range, fill_asks_value_to_range
+import time
+import calendar
+from datetime import datetime
 
 
 binance = Api(base_url='https://api.binance.com')
@@ -45,7 +48,37 @@ orderbook_df = pd.DataFrame(columns=['Actual Price', 'Avg Price last 5 mins', 'T
                                      ])
 
 
-for i in range(0, 2):
+for i in range(0, 20):
+    start = time.time()
+    r = binance.check_time()
+    print('system', int(time.time()*1000))
+    print('server', r.json())
+    print(calendar.timegm(time.gmtime()))
+
+    timestamp1 = 1703367681776
+    timestamp2 = 1703367680303
+
+    # Calculate the difference in seconds
+    difference_in_seconds = timestamp2 - timestamp1
+
+    # Convert the difference to minutes
+    difference_in_minutes = difference_in_seconds / 60000
+
+    print(f"The difference is approximately {difference_in_minutes:.2f} minutes.")
+    timestamp = 1703366811000/1000
+
+    # Convert Unix timestamp to a datetime object
+    dt_object = datetime.utcfromtimestamp(timestamp)
+
+    # Format the datetime object as a string
+    formatted_date_time = dt_object.strftime('%Y-%m-%d %H:%M:%S')
+
+    print(f"The converted date and time is: {formatted_date_time}")
+
+
+
+
+
     r = binance.get_order_book('BTCUSDT', limit='5000')
     order_book_data = r.json()
     order_book_data_bids = r.json()["bids"]
@@ -65,6 +98,9 @@ for i in range(0, 2):
     print(f'Average price: {avg_price}')
     orderbook_df.at[len(orderbook_df) - 1, 'Avg Price last 5 mins'] = avg_price
 
+    r = binance.get_klines_data(symbol='BTCUSDT', type='primary', end_time=str(int(time.time()*1000)), interval='1m')
+    print(r.json())
+
     for bid in order_book_data_bids:
         orderbook_df.at[len(orderbook_df)-1, 'Total Bid Quantity'] = (
                 orderbook_df.iloc[len(orderbook_df)-1]['Total Bid Quantity'] + float(bid[1])
@@ -78,6 +114,9 @@ for i in range(0, 2):
         )
         orderbook_percent = float(ask[0])/float(actual_price)*100 - 100
         orderbook_df = fill_asks_value_to_range(ask, orderbook_df, orderbook_percent)
+
+    print('waiting time is ',(time.time() - start))
+   # time.sleep(60 - (time.time() - start))
 
 
 with pd.ExcelWriter(r'OrdBookBids.xlsx') as writer:
