@@ -23,6 +23,9 @@ OB_2023_AVG_PER_1MONTH,
 KLINY sa minimalnie zbierane co minute
 KLINY maja nazwy tabeli
 KLINY dane sa pobierane dla kazdej tabeli osobno z /api/v3/klines z uwzglednieniem startTime, endTime i odpowiedniego interwalu czasowego zaleznego od tabeli (od 1 min do 1 month)
+KLINY od 15 min w gore maja dodatkowo kolumny RSI 6/12/24 zgodne z excelem wyliczen RSI 
+KLINY od 15 min w gore maja dodatkowo kolumny MA 7/25/99 zgodne z wzorem sum zamkniecia dzielonych na ilosc 7 lub 25 lub 99 z ktorych brano pomiar ostatnich klinow
+
 CLINES_1_2023_ALL_PER_1MINUTE, 
 CLINES_1_2023_ALL_PER_3MINUTE, 
 CLINES_1_2023_ALL_PER_5MINUTE,
