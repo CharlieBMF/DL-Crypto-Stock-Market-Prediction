@@ -18,7 +18,6 @@ class Api:
         self.actual_price_ticker_url = '/api/v3/ticker/price'
         self.order_book_ticker_url = '/api/v3/ticker/bookTicker'
         self.price_change_ticker_url = '/api/v3/ticker'
-        self.timestamp_primary_klines_update = str(int(time.time()*1000))  #primary updates is every minute
 
     def check_time(self):
         url = urllib.parse.urljoin(self.base_url, self.check_time_url)
@@ -114,7 +113,7 @@ class Api:
         print(response.text)
         return response
 
-    def get_klines_data(self, symbol, type, end_time, interval, limit='500'):
+    def get_klines_data(self, symbol, start_time, end_time, interval, limit='500'):
         """
         Kline/candlestick bars for a symbol.
         :param symbol: ex. ["BTCUSDT"]
@@ -138,8 +137,7 @@ class Api:
         """
         symbol_url = '?symbol=' + str(symbol).replace("'", "\"")
         interval_url = '&interval=' + interval
-        if type == 'primary':
-            start_time_url = '&startTime=' + self.timestamp_primary_klines_update
+        start_time_url = '&startTime=' + start_time
         end_time_url = '&endTime=' + end_time
         limit_url = '&limit=' + limit
         url = (urllib.parse.urljoin(self.base_url, self.klines_url) + symbol_url + interval_url + start_time_url +
@@ -147,7 +145,6 @@ class Api:
         print(url)
         response = self.execute_request(url)
         print(response.text)
-        self.timestamp_primary_klines_update = str(int(time.time()*1000))
         return response
 
     def get_last_24hr(self, symbols):
@@ -270,3 +267,29 @@ class Api:
     def execute_request(url):
         response = requests.get(url)
         return response
+
+
+class Klines(Api):
+
+    def __init__(self, base_url):
+        self.server_time = 1501538400000  # 01.08.2017
+        self.actual_table_name = ''
+        self.last_request_timestamp = {
+            '1m': 1501538400000, '3m': 1501538400000, '5m': 1501538400000,'15m': 1501538400000, '30m': 1501538400000,
+            '1h': 1501538400000,'2h': 1501538400000, '4h': 1501538400000, '6h': 1501538400000, '8h': 1501538400000,
+            '12h': 1501538400000, '1d': 1501538400000, '3d': 1501538400000, '12w': 1501538400000, '1M': 1501538400000
+        }  # 01.08.2017
+        self.time_intervals_in_unix = {
+            '1m': 60, '3m': 180, '5m': 300, '15m': 900, '30m': 1800, '1h': 3600,'2h': 7200, '4h': 14400, '6h': 21600,
+            '8h': 28800, '12h': 43200, '1d': 86400, '3d': 259200, '1w': 604800,
+        }
+        super().__init__(base_url)
+
+    def update_last_request_timestamp(self, period):
+        self.last_request_timestamp[period] = self.last_request_timestamp[period] + self.time_intervals_in_unix[period]
+
+    def update_period(self, period):
+        if self.last_request_timestamp[period] + self.time_intervals_in_unix[period] > self.server_time:
+            return True
+        else:
+            return False

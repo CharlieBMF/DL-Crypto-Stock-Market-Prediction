@@ -1,3 +1,6 @@
+KAZDA TABELA MA NA POCZATKU KOLUMNY [unixTimestamp] [Timestamp]
+
+
 ORDERBOOK jest zbierany co petle bez przerwy i wpisywany do tabel w sql
 ORDERBOOK tabele sa tworzone co miesiac nowa,
 ORDERBOOK tabele maja nazwe OB_1_2023_ALL
@@ -23,24 +26,24 @@ OB_2023_AVG_PER_1MONTH,
 KLINY sa minimalnie zbierane co minute
 KLINY maja nazwy tabeli
 KLINY dane sa pobierane dla kazdej tabeli osobno z /api/v3/klines z uwzglednieniem startTime, endTime i odpowiedniego interwalu czasowego zaleznego od tabeli (od 1 min do 1 month)
-KLINY od 15 min w gore maja dodatkowo kolumny RSI 6/12/24 zgodne z excelem wyliczen RSI 
-KLINY od 15 min w gore maja dodatkowo kolumny MA 7/25/99 zgodne z wzorem sum zamkniecia dzielonych na ilosc 7 lub 25 lub 99 z ktorych brano pomiar ostatnich klinow
+KLINY sa wzbogacone o kolumny analizy technicznej z biblioteki stockstats
+KLINY jako rekordy sa wpisywane do tabeli w zaleznosci od koniecznosci a w czasie oczekiwania (minimalnie 1 minuta) dokonywany jest update na rekordach dopisujac wskazniki analizy technicznej niezbedne do tego
 
-CLINES_1_2023_ALL_PER_1MINUTE, 
-CLINES_1_2023_ALL_PER_3MINUTE, 
-CLINES_1_2023_ALL_PER_5MINUTE,
-CLINES_1_2023_ALL_PER_15MINUTE,
-CLINES_1_2023_ALL_PER_30MINUTE,
-CLINES_2023_ALL_PER_1HOUR,
-CLINES_2023_ALL_PER_2HOUR,
-CLINES_2023_ALL_PER_4HOUR,
-CLINES_2023_ALL_PER_6HOUR,
-CLINES_2023_ALL_PER_8HOUR,
-CLINES_2023_ALL_PER_12HOUR,
-CLINES_2023_ALL_PER_1DAY,
-CLINES_2023_ALL_PER_3DAY,
-CLINES_2023_ALL_PER_1WEEK,
-CLINES_2023_ALL_PER_1MONTH,
+KLINES_MONTHLY_1_2023_ALL_PER_1MINUTE, 
+KLINES_MONTHLY_1_2023_ALL_PER_3MINUTE, 
+KLINES_MONTHLY_1_2023_ALL_PER_5MINUTE,
+KLINES_MONTHLY_1_2023_ALL_PER_15MINUTE,
+KLINES_MONTHLY_1_2023_ALL_PER_30MINUTE,
+KLINES_YEARLY_2023_ALL_PER_1HOUR,
+KLINES_YEARLY_2023_ALL_PER_2HOUR,
+KLINES_YEARLY_2023_ALL_PER_4HOUR,
+KLINES_YEARLY_2023_ALL_PER_6HOUR,
+KLINES_YEARLY_2023_ALL_PER_8HOUR,
+KLINES_YEARLY_2023_ALL_PER_12HOUR,
+KLINES_YEARLY_2023_ALL_PER_1DAY,
+KLINES_YEARLY_2023_ALL_PER_3DAY,
+KLINES_YEARLY_2023_ALL_PER_1WEEK,
+KLINES_YEARLY_2023_ALL_PER_1MONTH,
 KLINY co miesciac tworza nowa tabele
 
 
