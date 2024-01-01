@@ -113,3 +113,10 @@ LOG z ostatnim timestampem dla danego zakresu czasowego oraz nazwa tabeli
 
 
 DOCKER A zajmuje sie zbieraniem danych dla minimalnych tabel tzn dla OB_1_2023_ALL 	CLINES_1_2023_ALL_PER_1MINUTE,
+
+
+
+
+OPTION A dobrze przewiduje 1 do przodu
+OPTION B dobry plotly
+OPTION C mozliwosc forecastu do przodu kilka razy
