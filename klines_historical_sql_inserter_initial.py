@@ -38,7 +38,7 @@ for i in range(0, 1):
     r = historical_kline.get_klines_data(
         symbol='BTCUSDT',
         start_time=str(historical_kline.last_request_timestamp['1w']),
-        end_time=str(historical_kline.last_request_timestamp['1w']+historical_kline.time_intervals_in_unix['1w']*500*1000),
+        end_time=str(historical_kline.last_request_timestamp['1w']+historical_kline.time_intervals_in_unix['1w']*500),
         #end_time=str(int(time.time())*1000),
         interval='1w'
     )
@@ -46,7 +46,7 @@ for i in range(0, 1):
     for record in r.json():
         print(record)
         df_sql_inserter.at[len(df_sql_inserter), 'UNIXTimestampKlineOPEN'] = record[0]
-        df_sql_inserter.at[len(df_sql_inserter) -1, 'ISOInsertTimestamp'] = datetime.utcnow()
+        df_sql_inserter.at[len(df_sql_inserter) - 1, 'ISOInsertTimestamp'] = datetime.utcnow()
         df_sql_inserter.at[len(df_sql_inserter) - 1, 'ISOTimestampKlineCLOSE'] = str(
             datetime.utcfromtimestamp(int(record[6])/1000))
         df_sql_inserter.at[len(df_sql_inserter) - 1, 'UNIXTimestampKlineCLOSE'] = record[6]

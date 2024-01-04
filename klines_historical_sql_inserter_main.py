@@ -2,40 +2,59 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from base import Api, Klines
-from orderbook_functions import fill_bids_value_to_range, fill_asks_value_to_range
 import time
 import calendar
 from datetime import datetime
+from stockstats import wrap, unwrap
+from sqlalchemy import create_engine, text
+import threading
+import signal
 
 
-historical_kline = Klines(base_url='https://api.binance.com')
-
-sql_columns = [
-    'ISOInsertTimestamp', 'ISOTimestampKlineOPEN', 'UNIXInsertTimestamp', 'UNIXTimestampKlineOPEN',
-    'UNIXTimestampKlineCLOSE', 'openPrice', 'highPrice', 'lowPrice', 'closePrice', 'volume', 'quoteAssetVolume',
-    'tradesAmount', 'takerButBase', 'takerBuyQuote'
-]
-
-df_for_stock_stats = pd.DataFrame(columns=['amount', 'close', 'high', 'low', 'volume'])
-periods = ['1w', '3d', '1d', '12h', '8h', '6h', '4h', '2h', '1h', '30m', '15m', '5m', '3m', '1m']
-actual_period = periods[0]
+def handle_kb_interrupt(sig, frame):
+    stop_event.set()
 
 
-for i in range(0, 2):
-    # if historical_kline.update_period(actual_period):  # period actualization
-    #     actual_period = periods[periods.index(actual_period) + 1]
-    #     continue
+def preparation():
+    klines = Klines(
+        base_url='https://api.binance.com',
+        db_connection_string='postgresql://postgres:postgres@127.0.0.1/CryptoData',
+        )
+    klines.get_data_from_sql_checkpoints()
+    return klines
 
-    historical_kline.server_time = historical_kline.check_time()
-    print('server', historical_kline.server_time.json())
-    print('system', int(time.time() * 1000))
-    print('minimal time is ', 	1501538400*1000)
-#    r = historical_kline.get_klines_data(symbol='BTCUSDT', start_time=str(historical_kline.last_request_timestamp['1M'])
-#                                         , end_time=str(historical_kline.last_request_timestamp['1M'] +
-#                                                       historical_kline.time_intervals_in_unix['1M']), interval='1M')
-    r = historical_kline.get_klines_data(symbol='BTCUSDT', start_time=str(historical_kline.last_request_timestamp['1M'])
-                                        , end_time=str(int(time.time() * 1000)), interval='1M')
-    print(r.json)
-    print(len(r.json()))
-    #historical_kline.update_last_request_timestamp(actual_period)
-    print(i)
+
+def loop(klines):
+    df_for_stock_stats = pd.DataFrame(columns=['amount', 'close', 'high', 'low', 'volume'])
+    for i in range(0, 100):
+
+        klines.server_time = klines.check_time()
+        print('server', klines.server_time.json())
+        print('system', int(time.time() * 1000))
+        print('minimal time is ', 	1501538400*1000)
+        if stop_event.is_set():
+            break
+
+#    engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
+#    query = "SELECT * FROM \"BTC_KLINES_CACHE_" + actual_period + "\""
+#    print(query)
+#    df_cache = pd.read_sql(text(query), con=engine)
+#    engine.dispose()
+#    print(df_cache)
+
+    # engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
+    # with engine.begin() as connection:
+    #     query = text("SELECT * FROM \"BTC_KLINES_CACHE_" + actual_period + "\"")
+    #     print(query)
+    #     df_cache = pd.read_sql(query, con=connection)
+    #     print(df_cache)
+
+
+if __name__ == '__main__':
+    stop_event = threading.Event()
+    signal.signal(signal.SIGINT, handle_kb_interrupt)
+    klines = preparation()
+    thread = threading.Thread(target=loop, args=(klines,))
+    thread.start()
+    thread.join()
+    print('Program done')

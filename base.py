@@ -1,7 +1,8 @@
 import time
-
+from sqlalchemy import create_engine, text
 import requests
 import urllib.parse
+import pandas as pd
 
 
 class Api:
@@ -100,7 +101,7 @@ class Api:
                     "price": "4.00000100",
                     "qty": "12.00000000",
                     "quoteQty": "48.000012",
-                    "time": 1499865549590, // Trade executed timestamp, as same as `T` in the stream
+                    "time": 1499865549590, // Trade executed timestamp, as same as T in the stream
                     "isBuyerMaker": true,
                     "isBestMatch": true
                   }
@@ -271,18 +272,32 @@ class Api:
 
 class Klines(Api):
 
-    def __init__(self, base_url):
-        self.server_time = 1501538400000  # 01.08.2017
+    def __init__(self, base_url, db_connection_string):
+        self.server_time = 1503273600000  # 21.08.2017
+        self.db_connection_string = db_connection_string
         self.actual_table_name = ''
+        self.possible_periods = ['1w', '3d', '1d', '12h', '8h', '6h', '4h', '2h', '1h', '30m', '15m', '5m', '3m', '1m']
+        self.actual_period = ''
         self.last_request_timestamp = {
-            '1m': 1501538400000, '3m': 1501538400000, '5m': 1501538400000,'15m': 1501538400000, '30m': 1501538400000,
-            '1h': 1501538400000,'2h': 1501538400000, '4h': 1501538400000, '6h': 1501538400000, '8h': 1501538400000,
-            '12h': 1501538400000, '1d': 1501538400000, '3d': 1501538400000, '1w': 1501538400000, '1M': 1501538400000
-        }  # 01.08.2017
+            '1m': 1503273600000, '3m': 1503273600000, '5m': 1503273600000,'15m': 1503273600000, '30m': 1503273600000,
+            '1h': 1503273600000, '2h': 1503273600000, '4h': 1503273600000, '6h': 1503273600000, '8h': 1503273600000,
+            '12h': 1503273600000, '1d': 1503273600000, '3d': 1503273600000, '1w': 1503273600000, #'1M': 1503273600000
+        }  # 21.08.2017
+        self.next_request_timestamp = {
+            '1m': 1503273600000, '3m': 1503273600000, '5m': 1503273600000,'15m': 1503273600000, '30m': 1503273600000,
+            '1h': 1503273600000, '2h': 1503273600000, '4h': 1503273600000, '6h': 1503273600000, '8h': 1503273600000,
+            '12h': 1503273600000, '1d': 1503273600000, '3d': 1503273600000, '1w': 1503273600000, #'1M': 1503273600000
+        }  # 21.08.2017
         self.time_intervals_in_unix = {
-            '1m': 60, '3m': 180, '5m': 300, '15m': 900, '30m': 1800, '1h': 3600,'2h': 7200, '4h': 14400, '6h': 21600,
-            '8h': 28800, '12h': 43200, '1d': 86400, '3d': 259200, '1w': 604800,
+            '1m': 60000, '3m': 180000, '5m': 300000, '15m': 900000, '30m': 1800000, '1h': 3600000, '2h': 7200000,
+            '4h': 14400000, '6h': 21600000, '8h': 28800000, '12h': 43200000, '1d': 86400000, '3d': 259200000,
+            '1w': 604800000,
         }
+        self.sql_main_columns = [
+            'ISOInsertTimestamp', 'ISOTimestampKlineOPEN', 'UNIXInsertTimestamp', 'UNIXTimestampKlineOPEN',
+            'UNIXTimestampKlineCLOSE', 'openPrice', 'highPrice', 'lowPrice', 'closePrice', 'volume', 'quoteAssetVolume',
+            'tradesAmount', 'takerButBase', 'takerBuyQuote'
+        ]
         super().__init__(base_url)
 
     def update_last_request_timestamp(self, period):
@@ -293,3 +308,26 @@ class Klines(Api):
             return True
         else:
             return False
+
+    def get_data_from_sql_checkpoints(self):
+        query = text("SELECT * FROM \"_CHECKPOINTS\"")
+        checkpoints = self.execute_db_query(query)
+        for period in self.possible_periods:
+            last_request_timestamp = (
+                checkpoints.loc[checkpoints['Interval'] == period]['UNIXLastCloseTimestamp'].values)[0]
+            next_request_timestamp = (
+                checkpoints.loc[checkpoints['Interval'] == period]['UNIXNextTimestamp'].values)[0]
+            print(f'For period {period} last request timestamp = {last_request_timestamp},'
+                  f'next request timestamp =  {next_request_timestamp}')
+#            self.last_request_timestamp[period] = last_request_timestamp
+#            self.next_request_timestamp[period] = next_request_timestamp
+
+    @staticmethod
+    def execute_db_query(query):
+        print('in query execution')
+        engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
+        with engine.begin() as connection:
+            print(query)
+            df = pd.read_sql(query, con=connection)
+            print(f'Response for {query} is \n {df}')
+        return df

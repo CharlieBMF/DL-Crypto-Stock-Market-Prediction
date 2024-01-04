@@ -63,8 +63,13 @@ df_future['Date'] = pd.date_range(start=df_past['Date'].iloc[-1] + pd.Timedelta(
 df_future['Forecast'] = Y_.flatten()
 df_future['Actual'] = np.nan
 
-results = df_past._append(df_future).set_index('Date')
+results = df_past._append(df_future, ignore_index=True)
 print(results)
 
-with pd.ExcelWriter(r'optionC.xlsx') as writer:
-    results.to_excel(writer)
+
+actual_plot = results['Actual']
+future_plot = results['Forecast']
+
+plt.plot(actual_plot)
+plt.plot(future_plot)
+plt.show()
