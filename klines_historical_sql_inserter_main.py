@@ -28,10 +28,26 @@ def loop(klines):
     df_for_stock_stats = pd.DataFrame(columns=['amount', 'close', 'high', 'low', 'volume'])
     for i in range(0, 100):
 
-        klines.server_time = klines.check_time()
-        print('server', klines.server_time.json())
-        print('system', int(time.time() * 1000))
-        print('minimal time is ', 	1501538400*1000)
+        klines.update_server_time()
+
+        if not klines.continue_actual_period():
+            print('Actual period not continued')
+            klines.change_period()
+            continue
+
+        klines.get_data_from_sql_cache()
+        if klines.check_necessary_to_create_a_table():
+            klines.create_table_for_period()
+            klines.update_kline_settings('tables')
+
+
+
+
+
+
+
+        break
+        klines.update_checkpoints_table_in_sql()
         if stop_event.is_set():
             break
 
