@@ -10,7 +10,7 @@ from stockstats import wrap, unwrap
 from sqlalchemy import create_engine, text
 
 start = time.time()
-historical_kline = Klines(base_url='https://api.binance.com')
+historical_kline = Klines(base_url='https://api.binance.com', db_connection_string='postgresql://postgres:postgres@127.0.0.1/CryptoData',)
 
 df_sql_inserter = pd.DataFrame(columns=[
     'ISOInsertTimestamp', 'ISOTimestampKlineCLOSE', 'UNIXTimestampKlineOPEN', 'UNIXTimestampKlineCLOSE',

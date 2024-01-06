@@ -24,7 +24,7 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 scaler = scaler.fit(y)
 y = scaler.transform(y)
 
-n_lookback = 60  # length of input sequences (lookback period)
+n_lookback = 80  # length of input sequences (lookback period)
 n_forecast = 100  # length of output sequences (forecast period)
 
 X = []

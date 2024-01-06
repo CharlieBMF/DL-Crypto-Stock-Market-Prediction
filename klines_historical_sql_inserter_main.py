@@ -26,7 +26,7 @@ def preparation():
 
 def loop(klines):
     df_for_stock_stats = pd.DataFrame(columns=['amount', 'close', 'high', 'low', 'volume'])
-    for i in range(0, 100):
+    for i in range(0, 1):
 
         klines.update_server_time()
 
@@ -36,10 +36,12 @@ def loop(klines):
             continue
 
         klines.get_data_from_sql_cache()
+
         if klines.check_necessary_to_create_a_table():
             klines.create_table_for_period()
             klines.update_kline_settings('tables')
 
+        klines.get_and_save_new_klines()
 
 
 
