@@ -19,7 +19,7 @@ def preparation():
 
 
 def loop(klines):
-    for i in range(0, 1):
+    while True:
         for coin_type_klines in klines:
 
             coin_type_klines.update_server_time()
@@ -39,8 +39,8 @@ def loop(klines):
 
             coin_type_klines.update_checkpoints_table_in_sql()
 
-            if stop_event.is_set():
-                break
+        if stop_event.is_set():
+            break
 
 
 if __name__ == '__main__':
