@@ -1,12 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
-from base import Api, Klines
-import time
-import calendar
-from datetime import datetime
-from stockstats import wrap, unwrap
-from sqlalchemy import create_engine, text
+from base import Klines
 import threading
 import signal
 
@@ -14,58 +7,40 @@ import signal
 def handle_kb_interrupt(sig, frame):
     stop_event.set()
 
-
 def preparation():
-    klines = Klines(
+    btc_klines = Klines(
         base_url='https://api.binance.com',
         db_connection_string='postgresql://postgres:postgres@127.0.0.1/CryptoData',
+        coin='BTC',
         )
-    klines.get_data_from_sql_checkpoints()
+    btc_klines.get_data_from_sql_checkpoints()
+    klines = [btc_klines]
     return klines
 
 
 def loop(klines):
-    df_for_stock_stats = pd.DataFrame(columns=['amount', 'close', 'high', 'low', 'volume'])
     for i in range(0, 1):
+        for coin_type_klines in klines:
 
-        klines.update_server_time()
+            coin_type_klines.update_server_time()
 
-        if not klines.continue_actual_period():
-            print('Actual period not continued')
-            klines.change_period()
-            continue
+            if not coin_type_klines.continue_actual_period():
+                print('Actual period not continued')
+                coin_type_klines.change_period()
+                continue
 
-        klines.get_data_from_sql_cache()
+            coin_type_klines.get_data_from_sql_cache()
 
-        if klines.check_necessary_to_create_a_table():
-            klines.create_table_for_period()
-            klines.update_kline_settings('tables')
+            if coin_type_klines.check_necessary_to_create_a_table():
+                coin_type_klines.create_table_for_period()
+                coin_type_klines.update_kline_settings('tables')
 
-        klines.get_and_save_new_klines()
+            coin_type_klines.get_and_save_new_klines()
 
+            coin_type_klines.update_checkpoints_table_in_sql()
 
-
-
-
-
-        break
-        klines.update_checkpoints_table_in_sql()
-        if stop_event.is_set():
-            break
-
-#    engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
-#    query = "SELECT * FROM \"BTC_KLINES_CACHE_" + actual_period + "\""
-#    print(query)
-#    df_cache = pd.read_sql(text(query), con=engine)
-#    engine.dispose()
-#    print(df_cache)
-
-    # engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
-    # with engine.begin() as connection:
-    #     query = text("SELECT * FROM \"BTC_KLINES_CACHE_" + actual_period + "\"")
-    #     print(query)
-    #     df_cache = pd.read_sql(query, con=connection)
-    #     print(df_cache)
+            if stop_event.is_set():
+                break
 
 
 if __name__ == '__main__':

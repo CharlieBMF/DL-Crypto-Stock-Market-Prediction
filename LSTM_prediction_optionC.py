@@ -24,8 +24,8 @@ scaler = MinMaxScaler(feature_range=(0, 1))
 scaler = scaler.fit(y)
 y = scaler.transform(y)
 
-n_lookback = 80  # length of input sequences (lookback period)
-n_forecast = 100  # length of output sequences (forecast period)
+n_lookback = 250  # length of input sequences (lookback period)
+n_forecast = 400  # length of output sequences (forecast period)
 
 X = []
 Y = []
@@ -73,3 +73,6 @@ future_plot = results['Forecast']
 plt.plot(actual_plot)
 plt.plot(future_plot)
 plt.show()
+
+with pd.ExcelWriter(r'optionC.xlsx') as writer:
+    results.to_excel(writer)

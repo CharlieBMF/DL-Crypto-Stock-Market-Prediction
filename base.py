@@ -274,16 +274,17 @@ class Api:
 
 class Klines(Api):
 
-    def __init__(self, base_url, db_connection_string):
+    def __init__(self, base_url, db_connection_string, coin):
         self.server_time = 1503273600000  # 21.08.2017
+        self.coin = coin
         self.db_connection_string = db_connection_string
         self.next_table_name = ''
         self.table_creation_rules = {
-            'never': ['1w', '3d', '1d'], 'yearly': ['12h', '8h', '6h', '4h', '2h', '1h'],
-            'monthly': ['30m', '15m', '5m', '3m', '1m']
+            'never': ['1w', '3d', '1d', '12h', '8h'], 'yearly': ['6h', '4h', '2h', '1h', '30m', '15m',],
+            'monthly': ['5m', '3m', '1m']
         }
         self.possible_periods = ['1w', '3d', '1d', '12h', '8h', '6h', '4h', '2h', '1h', '30m', '15m', '5m', '3m', '1m']
-        self.actual_period = '1w'
+        self.actual_period = '5m'
         self.last_request_timestamp = {
             '1m': 1503273600000, '3m': 1503273600000, '5m': 1503273600000,'15m': 1503273600000, '30m': 1503273600000,
             '1h': 1503273600000, '2h': 1503273600000, '4h': 1503273600000, '6h': 1503273600000, '8h': 1503273600000,
@@ -300,15 +301,15 @@ class Klines(Api):
             '1w': 604800000,
         }
         self.actual_table_name = {
-            '1m': '', '3m': '', '5m': '','15m': '', '30m': '', '1h': '', '2h': '', '4h': '', '6h': '', '8h': '',
+            '1m': '', '3m': '', '5m': '', '15m': '', '30m': '', '1h': '', '2h': '', '4h': '', '6h': '', '8h': '',
             '12h': '', '1d': '', '3d': '', '1w': '', #'1M': ''
         }
         self.next_table_name = {
-            '1m': '', '3m': '', '5m': '','15m': '', '30m': '', '1h': '', '2h': '', '4h': '', '6h': '', '8h': '',
+            '1m': '', '3m': '', '5m': '', '15m': '', '30m': '', '1h': '', '2h': '', '4h': '', '6h': '', '8h': '',
             '12h': '', '1d': '', '3d': '', '1w': '', #'1M': ''
         }
         self.existed_tables = {
-            '1m': '', '3m': '', '5m': '','15m': '', '30m': '', '1h': '', '2h': '', '4h': '', '6h': '', '8h': '',
+            '1m': '', '3m': '', '5m': '', '15m': '', '30m': '', '1h': '', '2h': '', '4h': '', '6h': '', '8h': '',
             '12h': '', '1d': '', '3d': '', '1w': '', #'1M': ''
         }
         self.sql_main_columns = [
@@ -325,8 +326,8 @@ class Klines(Api):
         print('self server time', self.server_time)
 
     def get_data_from_sql_checkpoints(self):
-        query = text("SELECT * FROM \"_CHECKPOINTS\"")
-        checkpoints = self.execute_db_query(query)
+        query = text(f"SELECT * FROM \"_CHECKPOINTS\" WHERE \"Coin\" = '{self.coin}'")
+        checkpoints = self.execute_db_query(query, 'select')
         for period in self.possible_periods:
             last_request_timestamp = (
                 checkpoints.loc[checkpoints['Interval'] == period]['UNIXLastCloseTimestamp'].values)[0]
@@ -345,45 +346,44 @@ class Klines(Api):
 
 
     def get_data_from_sql_cache(self):
-        query = "SELECT * FROM \"BTC_KLINES_CACHE_" + self.actual_period + "\""
-        cached_last_150_rows = self.execute_db_query(query)
+        query = "SELECT * FROM \"" + self.coin + "_KLINES_CACHE_" + self.actual_period + "\""
+        cached_last_150_rows = self.execute_db_query(query, 'select')
         self.cached_last_150_rows = cached_last_150_rows[self.sql_main_columns].copy()
-        print(self.cached_last_150_rows)
 
     def check_necessary_to_create_a_table(self):
-        data = self.get_self_requests_years_and_months()
-        print('data', data)
-#        if self.actual_period in self.table_creation_rules['yearly']:
-#            if data['next_request_year'] > data['last_request_year']:
-#                return True
-#            return True
-        print(self.actual_period, type(self.actual_period))
+        actual_year = self.get_self_requests_years_and_months()['actual_request_year_string']
+        actual_month = self.get_self_requests_years_and_months()['actual_request_month_string']
+        print('SELF ACTUAL TABLE NAME', self.actual_table_name[self.actual_period])
+        print('SELF NEXT TABLE NAME', self.next_table_name[self.actual_period])
+        print('ACTUAL MONTH', actual_month)
+        if self.actual_period in self.table_creation_rules['yearly']:
+            if actual_year not in self.actual_table_name[self.actual_period]:
+                return True
         if self.actual_period in self.table_creation_rules['monthly']:
-#            if (data['next_request_year'] > data['last_request_year'] or
-#                    data['next_request_month'] > data['last_request_month']):
-#                return True
-            return True
+            if (actual_year not in self.actual_table_name[self.actual_period] or
+                    actual_month not in self.actual_table_name[self.actual_period]):
+                return True
         return False
 
     def create_table_for_period(self):
         query = ("CREATE TABLE \"" + self.next_table_name[self.actual_period] +
                  "\" AS SELECT * FROM \"" + self.actual_table_name[self.actual_period] + "\" WITH NO DATA")
-        print(query)
-        #self.execute_db_query(query)
+        self.execute_db_query(query, type_of_query='insert')
 
     def update_kline_settings(self, type_of_update):
         if type_of_update == 'tables':
             self.actual_table_name[self.actual_period] = self.next_table_name[self.actual_period]
             data = self.get_self_requests_years_and_months()
             if self.actual_period in self.table_creation_rules['yearly']:
-                self.next_table_name[self.actual_period] = ('BTC_KLINES_YEARLY_' + data['next_request_year'] + '_PER_'
-                                                            + self.actual_period)
-            elif self.actual_period in self.table_creation_rules['monthly']:
-                self.next_table_name[self.actual_period] = ('BTC_KLINES_MONTHLY_' + data['next_request_month'] + '_' +
+                self.next_table_name[self.actual_period] = (self.coin + '_KLINES_YEARLY_' +
                                                             data['next_request_year'] + '_PER_' + self.actual_period)
-            self.existed_tables[self.actual_period].append(self.next_table_name[self.actual_period])
- #           print('generated next table name: ', self.next_table_name[self.actual_period])
- #           print('existed tables', self.existed_tables[self.actual_period])
+            elif self.actual_period in self.table_creation_rules['monthly']:
+                self.next_table_name[self.actual_period] = (self.coin + '_KLINES_MONTHLY_' +
+                                                            data['next_request_month'] + '_' +
+                                                            data['next_request_year'] + '_PER_' + self.actual_period)
+            self.existed_tables[self.actual_period].append(self.actual_table_name[self.actual_period])
+            print('generated next table name: ', self.next_table_name[self.actual_period])
+            print('existed tables', self.existed_tables[self.actual_period])
 
     def continue_actual_period(self):
         if (self.last_request_timestamp[self.actual_period] + self.time_intervals_in_unix[self.actual_period]
@@ -395,19 +395,30 @@ class Klines(Api):
         return True
 
     def change_period(self):
+        print('Changing actual period.. ', self.actual_period)
         index = self.possible_periods.index(self.actual_period)
         index = (index + 1) % len(self.possible_periods)
         self.actual_period = self.possible_periods[index]
-        print(self.actual_period)
+        print('Actual period changed to...', self.actual_period)
 
     def get_self_requests_years_and_months(self):
-        last_request_year = datetime.utcfromtimestamp(self.last_request_timestamp[self.actual_period] / 1000).year
-        last_request_month = datetime.utcfromtimestamp(self.last_request_timestamp[self.actual_period] / 1000).month
-        next_request_year = datetime.utcfromtimestamp(self.next_request_timestamp[self.actual_period] / 1000).year
-        next_request_month = datetime.utcfromtimestamp(self.next_request_timestamp[self.actual_period] / 1000).month
+        actual_request_year = datetime.utcfromtimestamp(self.last_request_timestamp[self.actual_period] / 1000).year
+        actual_request_month = datetime.utcfromtimestamp(self.last_request_timestamp[self.actual_period] / 1000).month
+        if self.actual_period in self.table_creation_rules['monthly']:
+            if actual_request_month == 12:
+                next_request_month = str(1)
+                next_request_year = str(int(actual_request_year) + 1)
+            else:
+                next_request_month = str(int(actual_request_month) + 1)
+                next_request_year = str(actual_request_year)
+        else:
+            next_request_month = str(actual_request_month)
+            next_request_year = str(int(actual_request_year) + 1)
         return {
-            'last_request_year': str(last_request_year), 'last_request_month': str(last_request_month),
-            'next_request_year': str(next_request_year), 'next_request_month': str(next_request_month),
+            'actual_request_year_string': '_' + str(actual_request_year) + '_',
+            'actual_request_month_string': '_' + str(actual_request_month) + '_',
+            'next_request_year': next_request_year,
+            'next_request_month': next_request_month,
         }
 
     def get_and_save_new_klines(self):
@@ -417,11 +428,13 @@ class Klines(Api):
             lenght = self.get_intervals_quantity()
         print('length', lenght)
         r = self.get_klines_data(
-            symbol='BTCUSDT',
+            symbol= self.coin + 'USDT',
             start_time=str(self.last_request_timestamp[self.actual_period]),
             end_time=str(
-                self.last_request_timestamp['1w'] + self.time_intervals_in_unix[self.actual_period] * lenght),
-            interval='1w'
+                self.last_request_timestamp[self.actual_period] +
+                self.time_intervals_in_unix[self.actual_period] * lenght
+            ),
+            interval=self.actual_period
         )
         df_recent_data_without_stockstats = self.generate_df_from_api_response(r)
 
@@ -432,20 +445,23 @@ class Klines(Api):
             self.calculate_stockstats_for_df(df_sql_inserter_concat_without_stockstats))
 
         df_new_data_to_insert = df_sql_inserter_concat_with_stockstats.iloc[150:].copy()
-        df_new_data_for_cache = df_sql_inserter_concat_with_stockstats.tail(150).copy()
+        df_new_data_to_cache = df_sql_inserter_concat_with_stockstats.tail(150).copy()
 
+        self.save_klines_data(df_new_data_to_insert)
+        #self.truncate_cache_data()
+        self.save_cache_data(df_new_data_to_cache)
+        self.last_request_timestamp[self.actual_period] = int(df_new_data_to_insert.iloc[-1]['UNIXTimestampKlineCLOSE'])
+        self.next_request_timestamp[self.actual_period] = (
+                self.last_request_timestamp[self.actual_period] + self.time_intervals_in_unix[self.actual_period])
 
-############# teraz trzeba zrobic metody do zapisu df_new_data_to_insert do aktualnej tabeli oraz
-        ##### truncate tabeli cacheowej i zapisu df_new_data_for_cache do tabeli cacheowej
         with pd.ExcelWriter(r'test.xlsx') as writer:
             df_new_data_to_insert.to_excel(writer)
 
         with pd.ExcelWriter(r'cachetest.xlsx') as writer:
-            df_new_data_for_cache.to_excel(writer)
+            df_new_data_to_cache.to_excel(writer)
     def generate_df_from_api_response(self, response):
         df_sql_inserter = pd.DataFrame(columns=self.sql_main_columns)
         for record in response.json():
-            print(record)
             df_sql_inserter.at[len(df_sql_inserter), 'UNIXTimestampKlineOPEN'] = record[0]
             df_sql_inserter.at[len(df_sql_inserter) - 1, 'ISOInsertTimestamp'] = datetime.utcnow()
             df_sql_inserter.at[len(df_sql_inserter) - 1, 'ISOTimestampKlineCLOSE'] = str(
@@ -462,6 +478,35 @@ class Klines(Api):
             df_sql_inserter.at[len(df_sql_inserter) - 1, 'takerBuyQuote'] = round(float(record[10]), 2)
         return df_sql_inserter
 
+    def save_klines_data(self, df):
+        engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
+        df.to_sql(self.actual_table_name[self.actual_period], con=engine, if_exists='append', index=False)
+        engine.dispose()
+
+    def truncate_cache_data(self):
+        query = "TRUNCATE TABLE \"" + self.coin + "_KLINES_CACHE_" + self.actual_period + "\""
+        self.execute_db_query(query, type_of_query='truncate')
+
+    def save_cache_data(self, df):
+        engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
+        actual_cache_table = self.coin + "_KLINES_CACHE_" + self.actual_period
+        df.to_sql(actual_cache_table, con=engine, if_exists='replace', index=False)
+        engine.dispose()
+
+    def update_checkpoints_table_in_sql(self):
+        print(self.existed_tables[self.actual_period])
+        query = ("UPDATE \"_CHECKPOINTS\" SET \"UNIXLastCloseTimestamp\" = " +
+                 str(self.last_request_timestamp[self.actual_period]) +
+                 ", \"UNIXNextTimestamp\" = " + str(self.next_request_timestamp[self.actual_period]) +
+                 ", \"updateTimestamp\" = '" + str(datetime.utcnow()) +
+                 "', \"lastTableName\" = '" + self.actual_table_name[self.actual_period] +
+                 "', \"nextTableName\" = '" + self.next_table_name[self.actual_period] +
+                 "', \"existedTables\" = '" +
+                 str(self.existed_tables[self.actual_period]).replace('\\','').replace('\'','\"') +
+                 "' WHERE \"Coin\" = '" + self.coin + "' AND \"Interval\" = '" + self.actual_period + "'"
+                 )
+        print(query)
+        self.execute_db_query(query, type_of_query='update')
 
     def confirm_maximal_json_lenght(self):
         if (self.last_request_timestamp[self.actual_period] + self.time_intervals_in_unix[self.actual_period] * 500 >
@@ -636,12 +681,18 @@ class Klines(Api):
         return calculated_and_concated_with_primary_df
 
     @staticmethod
-    def execute_db_query(query):
-        print('in query execution')
+    def execute_db_query(query, type_of_query):
+        print('In query execution')
+        print(query)
         engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
-        with engine.begin() as connection:
-            print(query)
-            df = pd.read_sql(query, con=connection)
-            print(f'Response for {query} is \n {df}')
-        return df
+        if type_of_query == 'select':
+            with engine.begin() as connection:
+                df = pd.read_sql(query, con=connection)
+            return df
+        if type_of_query == 'truncate' or type_of_query == 'update' or type_of_query == 'insert':
+            with engine.begin() as connection:
+                query = text(query)
+                print(query)
+                connection.execute(query)
+
 
