@@ -2,10 +2,12 @@ import pandas as pd
 from base import Klines
 import threading
 import signal
+import warnings
 
 
 def handle_kb_interrupt(sig, frame):
     stop_event.set()
+
 
 def preparation():
     btc_klines = Klines(
@@ -42,6 +44,8 @@ def loop(klines):
         if stop_event.is_set():
             break
 
+
+warnings.simplefilter(action='ignore', category=pd.errors.PerformanceWarning)
 
 if __name__ == '__main__':
     stop_event = threading.Event()

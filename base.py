@@ -147,7 +147,7 @@ class Api:
                end_time_url + limit_url)
         print(url)
         response = self.execute_request(url)
-        print(response.text)
+        #print(response.text)
         return response
 
     def get_last_24hr(self, symbols):
@@ -383,7 +383,7 @@ class Klines(Api):
                                                             data['next_request_year'] + '_PER_' + self.actual_period)
             self.existed_tables[self.actual_period].append(self.actual_table_name[self.actual_period])
             print('generated next table name: ', self.next_table_name[self.actual_period])
-            print('existed tables', self.existed_tables[self.actual_period])
+            #print('existed tables', self.existed_tables[self.actual_period])
 
     def continue_actual_period(self):
         if (self.last_request_timestamp[self.actual_period] + self.time_intervals_in_unix[self.actual_period]
@@ -494,7 +494,7 @@ class Klines(Api):
         engine.dispose()
 
     def update_checkpoints_table_in_sql(self):
-        print(self.existed_tables[self.actual_period])
+        #print(self.existed_tables[self.actual_period])
         query = ("UPDATE \"_CHECKPOINTS\" SET \"UNIXLastCloseTimestamp\" = " +
                  str(self.last_request_timestamp[self.actual_period]) +
                  ", \"UNIXNextTimestamp\" = " + str(self.next_request_timestamp[self.actual_period]) +
@@ -505,7 +505,7 @@ class Klines(Api):
                  str(self.existed_tables[self.actual_period]).replace('\\','').replace('\'','\"') +
                  "' WHERE \"Coin\" = '" + self.coin + "' AND \"Interval\" = '" + self.actual_period + "'"
                  )
-        print(query)
+        #print(query)
         self.execute_db_query(query, type_of_query='update')
 
     def confirm_maximal_json_lenght(self):
@@ -682,17 +682,19 @@ class Klines(Api):
 
     @staticmethod
     def execute_db_query(query, type_of_query):
-        print('In query execution')
-        print(query)
+        #print('In query execution')
+        #print(query)
         engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
         if type_of_query == 'select':
+            print('In SELECT query execution')
             with engine.begin() as connection:
                 df = pd.read_sql(query, con=connection)
             return df
         if type_of_query == 'truncate' or type_of_query == 'update' or type_of_query == 'insert':
+            print('In TRUNCATE or UPDATE or INSERT query execution')
             with engine.begin() as connection:
                 query = text(query)
-                print(query)
+                #print(query)
                 connection.execute(query)
 
 

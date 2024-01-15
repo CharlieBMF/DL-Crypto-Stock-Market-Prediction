@@ -4,17 +4,35 @@ import tensorflow as tf
 from tensorflow.keras.layers import Dense, LSTM
 from tensorflow.keras.models import Sequential
 from sklearn.preprocessing import MinMaxScaler
+from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
 pd.options.mode.chained_assignment = None
 tf.random.set_seed(0)
 
 
-df = pd.read_excel("stock_stats.xlsx")
+#df = pd.read_excel("stock_stats.xlsx")
+
+
+#TABLES = ["BTC_KLINES_MONTHLY_8_2017_PER_3m", "BTC_KLINES_MONTHLY_9_2017_PER_3m", "BTC_KLINES_MONTHLY_10_2017_PER_3m", "BTC_KLINES_MONTHLY_11_2017_PER_3m", "BTC_KLINES_MONTHLY_12_2017_PER_3m", "BTC_KLINES_MONTHLY_1_2018_PER_3m", "BTC_KLINES_MONTHLY_2_2018_PER_3m", "BTC_KLINES_MONTHLY_3_2018_PER_3m", "BTC_KLINES_MONTHLY_4_2018_PER_3m", "BTC_KLINES_MONTHLY_5_2018_PER_3m", "BTC_KLINES_MONTHLY_6_2018_PER_3m", "BTC_KLINES_MONTHLY_7_2018_PER_3m", "BTC_KLINES_MONTHLY_8_2018_PER_3m", "BTC_KLINES_MONTHLY_9_2018_PER_3m", "BTC_KLINES_MONTHLY_10_2018_PER_3m", "BTC_KLINES_MONTHLY_11_2018_PER_3m", "BTC_KLINES_MONTHLY_12_2018_PER_3m", "BTC_KLINES_MONTHLY_1_2019_PER_3m", "BTC_KLINES_MONTHLY_2_2019_PER_3m", "BTC_KLINES_MONTHLY_3_2019_PER_3m", "BTC_KLINES_MONTHLY_4_2019_PER_3m", "BTC_KLINES_MONTHLY_5_2019_PER_3m", "BTC_KLINES_MONTHLY_6_2019_PER_3m", "BTC_KLINES_MONTHLY_7_2019_PER_3m", "BTC_KLINES_MONTHLY_8_2019_PER_3m", "BTC_KLINES_MONTHLY_9_2019_PER_3m", "BTC_KLINES_MONTHLY_10_2019_PER_3m", "BTC_KLINES_MONTHLY_11_2019_PER_3m", "BTC_KLINES_MONTHLY_12_2019_PER_3m", "BTC_KLINES_MONTHLY_1_2020_PER_3m", "BTC_KLINES_MONTHLY_2_2020_PER_3m", "BTC_KLINES_MONTHLY_3_2020_PER_3m", "BTC_KLINES_MONTHLY_4_2020_PER_3m", "BTC_KLINES_MONTHLY_5_2020_PER_3m", "BTC_KLINES_MONTHLY_6_2020_PER_3m", "BTC_KLINES_MONTHLY_7_2020_PER_3m", "BTC_KLINES_MONTHLY_8_2020_PER_3m", "BTC_KLINES_MONTHLY_9_2020_PER_3m", "BTC_KLINES_MONTHLY_10_2020_PER_3m", "BTC_KLINES_MONTHLY_11_2020_PER_3m", "BTC_KLINES_MONTHLY_12_2020_PER_3m", "BTC_KLINES_MONTHLY_1_2021_PER_3m", "BTC_KLINES_MONTHLY_2_2021_PER_3m", "BTC_KLINES_MONTHLY_3_2021_PER_3m", "BTC_KLINES_MONTHLY_4_2021_PER_3m", "BTC_KLINES_MONTHLY_5_2021_PER_3m", "BTC_KLINES_MONTHLY_6_2021_PER_3m", "BTC_KLINES_MONTHLY_7_2021_PER_3m", "BTC_KLINES_MONTHLY_8_2021_PER_3m", "BTC_KLINES_MONTHLY_9_2021_PER_3m", "BTC_KLINES_MONTHLY_10_2021_PER_3m", "BTC_KLINES_MONTHLY_11_2021_PER_3m", "BTC_KLINES_MONTHLY_12_2021_PER_3m", "BTC_KLINES_MONTHLY_1_2022_PER_3m", "BTC_KLINES_MONTHLY_2_2022_PER_3m", "BTC_KLINES_MONTHLY_3_2022_PER_3m", "BTC_KLINES_MONTHLY_4_2022_PER_3m", "BTC_KLINES_MONTHLY_5_2022_PER_3m", "BTC_KLINES_MONTHLY_6_2022_PER_3m", "BTC_KLINES_MONTHLY_7_2022_PER_3m", "BTC_KLINES_MONTHLY_8_2022_PER_3m", "BTC_KLINES_MONTHLY_9_2022_PER_3m", "BTC_KLINES_MONTHLY_10_2022_PER_3m", "BTC_KLINES_MONTHLY_11_2022_PER_3m", "BTC_KLINES_MONTHLY_12_2022_PER_3m", "BTC_KLINES_MONTHLY_1_2023_PER_3m", "BTC_KLINES_MONTHLY_2_2023_PER_3m", "BTC_KLINES_MONTHLY_3_2023_PER_3m", "BTC_KLINES_MONTHLY_4_2023_PER_3m", "BTC_KLINES_MONTHLY_5_2023_PER_3m", "BTC_KLINES_MONTHLY_6_2023_PER_3m", "BTC_KLINES_MONTHLY_7_2023_PER_3m", "BTC_KLINES_MONTHLY_8_2023_PER_3m", "BTC_KLINES_MONTHLY_9_2023_PER_3m", "BTC_KLINES_MONTHLY_10_2023_PER_3m", "BTC_KLINES_MONTHLY_11_2023_PER_3m", "BTC_KLINES_MONTHLY_12_2023_PER_3m"]
+
+TABLES = ["BTC_KLINES_MONTHLY_8_2017_PER_3m"]
+engine = create_engine('postgresql://postgres:postgres@127.0.0.1/CryptoData')
+df = pd.DataFrame()
+for table in TABLES:
+    with engine.begin() as connection:
+        query = "SELECT * FROM \"" + table + "\""
+        df1 = pd.read_sql(query, con=connection)
+
+    df = pd.concat([df, df1], axis=0, ignore_index=True)
+    print(table, len(df))
+
+
 df.drop(columns=['ISOInsertTimestamp', 'ISOTimestampKlineCLOSE', 'UNIXTimestampKlineOPEN', 'UNIXTimestampKlineCLOSE',
                  'close_minus99_d', 'close_80_roc', 'close_99_roc', 'close_150_roc', 'mfi_80', 'mfi_99', 'mfi_150',
                  'ftr_80', 'ftr_99', 'ftr_150', ],
         inplace=True)
 print(df)
+
 
 
 y = df['closePrice'].fillna(method='ffill')
@@ -25,7 +43,7 @@ scaler = scaler.fit(y)
 y = scaler.transform(y)
 
 n_lookback = 250  # length of input sequences (lookback period)
-n_forecast = 400  # length of output sequences (forecast period)
+n_forecast = 300  # length of output sequences (forecast period)
 
 X = []
 Y = []
