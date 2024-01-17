@@ -25,6 +25,7 @@ class Api:
 
     def check_time(self):
         url = urllib.parse.urljoin(self.base_url, self.check_time_url)
+        print(url)
         response = self.execute_request(url)
         return response
 
