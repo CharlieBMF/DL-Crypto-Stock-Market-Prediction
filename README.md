@@ -3,3 +3,5 @@ Collect data from crypto market, train models to predict future market trend, re
 <<<<<<< HEAD
 =======
 
+
+
